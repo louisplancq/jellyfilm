@@ -1,0 +1,230 @@
+name: jellyfilm
+
+services:
+  caddy:
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
+    image: localhost/caddy-duckdns:latest
+    container_name: caddy
+    user: "1000:1000"
+    env_file:
+      - ./.env
+    ports:
+      - "30000:30000/tcp"
+    volumes:
+      - ./caddy/config:/etc/caddy:ro
+      - ./data/caddy/data:/data
+      - ./data/caddy/config:/config
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Europe/Paris
+      JELLYFIN_PublishedServerUrl: https://0x6c706c.duckdns.org:30000
+    ports:
+      - "127.0.0.1:8096:8096/tcp"
+    volumes:
+      - ./data/jellyfin/config:/config
+      - ./data/seerr:/seerr
+      - ./media/movies:/movies:ro
+      - ./media/series:/series:ro
+      - ./media/anime:/anime:ro
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      PUID: "1001"
+      PGID: "1000"
+      TZ: Europe/Paris
+    ports:
+      - "127.0.0.1:8989:8989/tcp"
+    volumes:
+      - ./data/sonarr:/config
+      - ./media/raw/complete/Sonarr:/downloads/sonarr
+      - ./media/series:/series
+      - ./media/anime:/anime
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      PUID: "1002"
+      PGID: "1000"
+      TZ: Europe/Paris
+    ports:
+      - "127.0.0.1:7878:7878/tcp"
+    volumes:
+      - ./data/radarr:/config
+      - ./media/raw/complete/Radarr:/downloads/radarr
+      - ./media/movies:/movies
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      PUID: "1003"
+      PGID: "1000"
+      TZ: Europe/Paris
+    ports:
+      - "127.0.0.1:6767:6767/tcp"
+    volumes:
+      - ./data/bazarr:/config
+      - ./media/movies:/movies
+      - ./media/series:/series
+      - ./media/anime:/anime
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      PUID: "1004"
+      PGID: "1000"
+      TZ: Europe/Paris
+    ports:
+      - "127.0.0.1:9696:9696/tcp"
+    volumes:
+      - ./data/prowlarr:/config
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      LOG_LEVEL: info
+      LOG_HTML: "false"
+      CAPTCHA_SOLVER: none
+      TZ: Europe/Paris
+    ports:
+      - "127.0.0.1:8191:8191/tcp"
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    environment:
+      LOG_LEVEL: info
+      TZ: Europe/Paris
+    ports:
+      - "127.0.0.1:5055:5055/tcp"
+    volumes:
+      - ./data/seerr:/app/config
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      PUID: "1005"
+      PGID: "1000"
+      TZ: Europe/Paris
+      WEBUI_PORT: "8080"
+      TORRENTING_PORT: "6881"
+    ports:
+      - "127.0.0.1:8080:8080/tcp"
+      - "6881:6881/tcp"
+      - "6881:6881/udp"
+    volumes:
+      - ./data/qbittorent:/config
+      - ./media/raw/complete:/downloads
+      - ./media/raw/complete/Sonarr:/downloads/sonarr
+      - ./media/raw/complete/Radarr:/downloads/radarr
+      - ./media/raw/incomplete:/incomplete
+      - ./media/raw/torrents:/torrents
+    networks:
+      - apps
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    stop_grace_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  apps:
+    name: jellyfilm_apps
+    driver: bridge
