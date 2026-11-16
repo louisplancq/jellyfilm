@@ -1,0 +1,32 @@
+# Secrets
+.env
+**/.env
+**/.env.*
+!.env.example
+
+# Persistent application data
+/data/*
+!/data/.gitkeep
+
+# Media libraries and downloads
+/media/*
+!/media/anime/
+!/media/movies/
+!/media/series/
+!/media/raw/
+/media/anime/*
+/media/movies/*
+/media/series/*
+/media/raw/*
+!/media/anime/.gitkeep
+!/media/movies/.gitkeep
+!/media/series/.gitkeep
+!/media/raw/complete/
+!/media/raw/incomplete/
+!/media/raw/torrents/
+/media/raw/complete/*
+/media/raw/incomplete/*
+/media/raw/torrents/*
+!/media/raw/complete/.gitkeep
+!/media/raw/incomplete/.gitkeep
+!/media/raw/torrents/.gitkeep

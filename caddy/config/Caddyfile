@@ -1,0 +1,12 @@
+{
+    email 0x6c706c@duckdns.org
+    auto_https disable_redirects
+}
+
+0x6c706c.duckdns.org:30000 {
+    tls {
+        dns duckdns {env.DUCKDNS_API_TOKEN}
+    }
+
+    reverse_proxy jellyfin:8096
+}
